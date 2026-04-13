@@ -237,6 +237,40 @@ label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(-
 .spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ── NOTIFICATIONS ── */
+.notif-bell-wrap{position:relative;display:inline-flex}
+.notif-badge{position:absolute;top:-5px;right:-6px;background:var(--rust);color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 4px;pointer-events:none}
+.notif-panel{position:absolute;top:calc(100% + 12px);right:0;width:360px;background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:0 12px 40px rgba(13,13,13,0.15);z-index:1500;max-height:480px;overflow:hidden;display:flex;flex-direction:column;animation:fadeIn .2s ease}
+.notif-panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.notif-panel-head h4{font-family:var(--font-head);font-size:16px;font-weight:700}
+.notif-list{overflow-y:auto;flex:1}
+.notif-item{display:flex;gap:12px;padding:14px 20px;cursor:pointer;transition:background .15s;border-bottom:1px solid var(--border)}
+.notif-item:hover{background:var(--cream)}
+.notif-item.unread{background:#FFF8EE}
+.notif-item.unread::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--saffron);flex-shrink:0;margin-top:6px}
+.notif-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.notif-content{flex:1;min-width:0}
+.notif-title{font-size:13px;font-weight:600;color:var(--ink)}
+.notif-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+.notif-time{font-size:10px;color:var(--muted);margin-top:3px}
+.notif-empty{padding:40px;text-align:center;color:var(--muted);font-size:13px}
+
+/* ── DASHBOARD ── */
+.dash-welcome{background:linear-gradient(135deg,var(--ink) 0%,#2a2a2a 100%);color:#fff;border-radius:var(--r);padding:32px;margin-bottom:24px;position:relative;overflow:hidden}
+.dash-welcome::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:var(--saffron);opacity:.08;top:-100px;right:-80px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px;margin-bottom:24px}
+.dash-stat{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;cursor:pointer;transition:all .2s}
+.dash-stat:hover{border-color:var(--saffron);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.08)}
+.dash-stat-icon{font-size:24px;margin-bottom:10px}
+.dash-stat-num{font-family:var(--font-head);font-size:28px;font-weight:800;color:var(--ink)}
+.dash-stat-label{font-size:12px;color:var(--muted);font-weight:500;margin-top:2px}
+.dash-quick-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px}
+.dash-action{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:20px;text-align:center;cursor:pointer;transition:all .2s;text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:8px}
+.dash-action:hover{border-color:var(--saffron);background:var(--cream)}
+.dash-action-icon{font-size:28px}
+.dash-action-label{font-size:13px;font-weight:600;color:var(--ink)}
+.dash-section-title{font-family:var(--font-head);font-size:18px;font-weight:700;margin-bottom:14px;color:var(--ink)}
+
 /* Config warning banner */
 #configWarning{background:#c62828;color:#fff;padding:12px 20px;text-align:center;font-size:13px;font-weight:500;position:fixed;top:0;left:0;right:0;z-index:9999}
 </style>
@@ -270,6 +304,17 @@ label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(-
     <button class="btn btn-ghost btn-sm" onclick="showPage('mybookings')"><i class="fa fa-ticket"></i> Bookings</button>
     <button class="btn btn-ghost btn-sm" onclick="showPage('chat')"><i class="fa fa-comment"></i> Chat <span id="chatBadge" class="badge badge-pending hidden" style="padding:1px 6px;font-size:10px"></span></button>
     <button class="btn btn-ghost btn-sm" onclick="showPage('profile')"><i class="fa fa-user"></i> Profile</button>
+    <div class="notif-bell-wrap" id="notifWrap" style="position:relative">
+      <button class="btn btn-ghost btn-sm" onclick="toggleNotifPanel(event)" id="notifBellBtn" title="Notifications"><i class="fa fa-bell"></i></button>
+      <span class="notif-badge hidden" id="notifBadge">0</span>
+      <div class="notif-panel hidden" id="notifPanel">
+        <div class="notif-panel-head">
+          <h4>🔔 Notifications</h4>
+          <button class="btn btn-xs btn-ghost" onclick="markAllNotifsRead()">Mark all read</button>
+        </div>
+        <div class="notif-list" id="notifList"><div class="notif-empty">No notifications yet</div></div>
+      </div>
+    </div>
     <button class="btn btn-saffron btn-sm" onclick="showPage('list')"><i class="fa fa-plus"></i> Offer Ride</button>
   </div>
   <div class="nav-links hidden" id="navLinksAdmin">
@@ -350,6 +395,62 @@ label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(-
     <p>Ride Together. Save Together. © 2025 Waka Technologies — Cameroon</p>
     <p style="margin-top:8px"><a href="#" onclick="showPage('admin-login');return false" style="color:var(--muted);font-size:11px">Staff Login</a></p>
   </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- DASHBOARD PAGE (post-login) -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div id="dashboard" class="page">
+  <div class="page-inner" style="max-width:960px">
+    <!-- Welcome banner -->
+    <div class="dash-welcome">
+      <div style="position:relative;z-index:1">
+        <div style="font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--saffron);margin-bottom:8px">Welcome back</div>
+        <div style="font-family:var(--font-head);font-size:32px;font-weight:800;margin-bottom:6px" id="dashWelcomeName">Hey there 👋</div>
+        <div style="font-size:14px;color:rgba(255,255,255,0.6)" id="dashWelcomeSub">What would you like to do today?</div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-grid" id="dashStats">
+      <div class="dash-stat" onclick="showPage('mybookings')">
+        <div class="dash-stat-icon">🎫</div>
+        <div class="dash-stat-num" id="dashBookingCount">–</div>
+        <div class="dash-stat-label">My Bookings</div>
+      </div>
+      <div class="dash-stat" onclick="showPage('mybookings');setTimeout(()=>switchTab('asDriver',document.querySelectorAll('.tabs .tab')[1]),200)">
+        <div class="dash-stat-icon">🚗</div>
+        <div class="dash-stat-num" id="dashListingCount">–</div>
+        <div class="dash-stat-label">My Ride Listings</div>
+      </div>
+      <div class="dash-stat" onclick="showPage('chat')">
+        <div class="dash-stat-icon">💬</div>
+        <div class="dash-stat-num" id="dashMsgCount">–</div>
+        <div class="dash-stat-label">Messages</div>
+      </div>
+      <div class="dash-stat" onclick="showPage('profile')">
+        <div class="dash-stat-icon">⭐</div>
+        <div class="dash-stat-num" id="dashRating">–</div>
+        <div class="dash-stat-label">My Rating</div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="dash-section-title">Quick Actions</div>
+    <div class="dash-quick-actions" style="margin-bottom:28px">
+      <div class="dash-action" onclick="showPage('browse')"><div class="dash-action-icon">🔍</div><div class="dash-action-label">Find a Ride</div></div>
+      <div class="dash-action" onclick="showPage('list')"><div class="dash-action-icon">➕</div><div class="dash-action-label">Offer a Ride</div></div>
+      <div class="dash-action" onclick="showPage('mybookings')"><div class="dash-action-icon">📋</div><div class="dash-action-label">My Bookings</div></div>
+      <div class="dash-action" onclick="showPage('chat')"><div class="dash-action-icon">💬</div><div class="dash-action-label">Messages</div></div>
+      <div class="dash-action" onclick="showPage('profile')"><div class="dash-action-icon">👤</div><div class="dash-action-label">My Profile</div></div>
+    </div>
+
+    <!-- Recent bookings preview -->
+    <div class="dash-section-title">Recent Activity</div>
+    <div id="dashRecentActivity" style="display:flex;flex-direction:column;gap:12px">
+      <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Loading your activity…</div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════ -->
@@ -933,6 +1034,7 @@ const state = {
   currentRating: 0,
   ratingTargetId: null,
   bargainRideId: null,
+  notifications: [],
 };
 
 // ─────────────────────────────────────────────────────
@@ -951,11 +1053,13 @@ function showPage(name) {
   const pg = document.getElementById(name);
   if (pg) pg.classList.add('active');
   window.scrollTo(0, 0);
+  closeNotifPanel();
 
   if (name === 'browse') loadRides();
   if (name === 'mybookings') loadMyBookings();
   if (name === 'chat') loadChatList();
   if (name === 'profile') loadProfilePage();
+  if (name === 'dashboard') loadDashboard();
   if (name === 'admin') { loadAdminDashboard(); showAdminNav(); }
 }
 
@@ -1022,6 +1126,7 @@ async function register() {
     } catch(e) {}
     closeModal('registerModal');
     toast('Welcome to Waka! 🎉', 'success');
+    setTimeout(() => { if (state.user && !state.isAdmin) showPage('dashboard'); }, 600);
   } catch(e) {
     showEl(errEl, friendlyError(e));
   } finally {
@@ -1046,6 +1151,8 @@ async function login() {
     await signInWithEmailAndPassword(auth, email, pass);
     closeModal('loginModal');
     toast('Welcome back! 👋', 'success');
+    // onAuthStateChanged handles nav update; redirect to dashboard
+    setTimeout(() => { if (state.user && !state.isAdmin) showPage('dashboard'); }, 600);
   } catch(e) {
     showEl(errEl, friendlyError(e));
     btn.innerHTML = '<i class="fa fa-sign-in-alt"></i> Sign In';
@@ -1111,21 +1218,30 @@ waitForFb(() => {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       state.user = user;
-      const snap = await getDoc(doc(db, 'users', user.uid));
-      if (snap.exists()) {
-        state.profile = snap.data();
-        updateNavAuth();
-        // If on admin page, check admin status
-        const adminSnap = await getDoc(doc(db, 'admins', user.uid));
-        if (adminSnap.exists()) {
-          state.isAdmin = true;
-          state.adminProfile = adminSnap.data();
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          state.profile = snap.data();
+          const adminSnap = await getDoc(doc(db, 'admins', user.uid));
+          if (adminSnap.exists()) {
+            state.isAdmin = true;
+            state.adminProfile = adminSnap.data();
+          }
+          updateNavAuth();
+          // If currently on home or no specific page, go to dashboard
+          const activePage = document.querySelector('.page.active');
+          if (!state.isAdmin && activePage && (activePage.id === 'home' || activePage.id === '')) {
+            showPage('dashboard');
+          }
+          // Start notification listener
+          listenNotifications();
         }
-      }
+      } catch(e) { console.warn('Profile load error', e); }
     } else {
       state.user = null;
       state.profile = null;
       state.isAdmin = false;
+      stopNotifListener();
     }
   });
 
@@ -1147,23 +1263,27 @@ function updateNavAuth() {
 // ─────────────────────────────────────────────────────
 let ridesUnsubscribe = null;
 function loadRides() {
-  const { db, collection, query, where, orderBy, onSnapshot } = window._fb;
+  if (!window._fb) { waitForFb(loadRides); return; }
+  const { db, collection, query, where, onSnapshot } = window._fb;
   const listEl = document.getElementById('rideList');
+  if (!listEl) return;
   listEl.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)"><span class="spinner" style="border-top-color:var(--saffron);width:30px;height:30px"></span></div>';
 
   if (ridesUnsubscribe) ridesUnsubscribe();
 
-  const q = query(collection(db, 'rides'),
-    where('status', '==', 'active'),
-    orderBy('depDate', 'asc')
-  );
+  // Use simple query — no orderBy to avoid composite index requirement
+  // Sorting is done client-side
+  const q = query(collection(db, 'rides'), where('status', '==', 'active'));
 
   ridesUnsubscribe = onSnapshot(q, snap => {
     state.rides = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Sort client-side by date ascending
+    state.rides.sort((a, b) => (a.depDate + (a.depTime||'')).localeCompare(b.depDate + (b.depTime||'')));
     state.filteredRides = [...state.rides];
     filterRides();
   }, err => {
-    listEl.innerHTML = '<div class="alert alert-error">Error loading rides. Please refresh.</div>';
+    console.error('Rides error:', err);
+    listEl.innerHTML = '<div class="alert alert-error">Could not load rides. Check your Firebase Firestore rules.</div>';
   });
 }
 
@@ -1420,6 +1540,8 @@ async function confirmBooking() {
     // Update seat count
     await updateDoc(doc(db, 'rides', r.id), { seatsLeft: increment(-seats) });
     try { await updateDoc(doc(db, 'platform', 'stats'), { totalBookings: increment(1) }); } catch(e){}
+    // Notify driver of new booking
+    createNotification(r.driverId, '🎫 New Booking Request', `${state.profile?.name||'A passenger'} wants ${seats} seat(s) on your ride ${r.from} → ${r.to}.`, 'booking', bookRef.id);
 
     // Open chat with driver
     closeModal('bookModal');
@@ -1438,56 +1560,70 @@ async function confirmBooking() {
 // ─────────────────────────────────────────────────────
 async function loadMyBookings() {
   if (!state.user) return;
-  const { db, collection, query, where, orderBy, getDocs } = window._fb;
+  const { db, collection, query, where, getDocs } = window._fb;
 
   // Passenger bookings
   const pbEl = document.getElementById('passengerBookings');
   const nopbEl = document.getElementById('noPassengerBookings');
-  pbEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
+  if (pbEl) pbEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
 
   try {
-    const q1 = query(collection(db, 'bookings'), where('passengerId','==',state.user.uid), orderBy('createdAt','desc'));
+    // Simple query without orderBy — sort client-side to avoid composite index
+    const q1 = query(collection(db, 'bookings'), where('passengerId','==',state.user.uid));
     const snap1 = await getDocs(q1);
-    const bookings = snap1.docs.map(d => ({id:d.id,...d.data()}));
+    let bookings = snap1.docs.map(d => ({id:d.id,...d.data()}));
+    // Sort by createdAt desc client-side
+    bookings.sort((a,b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
     if (bookings.length) {
-      nopbEl.style.display = 'none';
+      if (nopbEl) nopbEl.style.display = 'none';
       pbEl.innerHTML = bookings.map(b => `
         <div class="card" style="padding:20px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
             <div><div style="font-weight:700;font-size:16px">${esc(b.from)} → ${esc(b.to)}</div>
-            <div style="color:var(--muted);font-size:13px">${b.depDate} · ${b.seats} seat(s) · Driver: ${esc(b.driverName||'')}</div></div>
-            <span class="booking-status-badge bs-${b.status}">${capitalize(b.status)}</span>
+            <div style="color:var(--muted);font-size:13px">${b.depDate||''} · ${b.seats||1} seat(s) · Driver: ${esc(b.driverName||'')}</div></div>
+            <span class="booking-status-badge bs-${b.status}">${capitalize(b.status||'pending')}</span>
           </div>
           <div style="font-size:13px;color:var(--muted);margin-top:8px">Total: ${(b.total||0).toLocaleString()} XAF · Deposit: ${(b.deposit||0).toLocaleString()} XAF</div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
             <button class="btn btn-ghost btn-sm" onclick="startChatWithDriver('${b.driverId}','${b.rideId}')"><i class="fa fa-comment"></i> Chat Driver</button>
             ${b.status==='accepted'?`<button class="btn btn-sage btn-sm" onclick="openRateModal('driver','${b.driverName}','${b.driverId}')"><i class="fa fa-star"></i> Rate</button>`:''}
-            ${b.status==='pending'?`<button class="btn btn-rust btn-sm" onclick="cancelBooking('${b.id}','${b.rideId}',${b.seats})"><i class="fa fa-times"></i> Cancel</button>`:''}
+            ${b.status==='pending'?`<button class="btn btn-rust btn-sm" onclick="cancelBooking('${b.id}','${b.rideId}',${b.seats||1})"><i class="fa fa-times"></i> Cancel</button>`:''}
           </div>
         </div>`).join('');
     } else {
-      nopbEl.style.display = '';
-      pbEl.innerHTML = '';
+      if (nopbEl) nopbEl.style.display = '';
+      if (pbEl) pbEl.innerHTML = '';
     }
-  } catch(e) { pbEl.innerHTML = '<div class="alert alert-error">Error loading bookings.</div>'; }
+  } catch(e) { console.error('Booking load error:', e); if (pbEl) pbEl.innerHTML = `<div class="alert alert-error">Error loading bookings: ${e.message}</div>`; }
 
   // Driver listings
   const dlEl = document.getElementById('driverListings');
   const nodlEl = document.getElementById('noDriverListings');
-  dlEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
+  if (dlEl) dlEl.innerHTML = '<div style="color:var(--muted);font-size:13px">Loading…</div>';
 
   try {
-    const q2 = query(collection(db, 'rides'), where('driverId','==',state.user.uid), orderBy('createdAt','desc'));
+    // Simple query without orderBy — sort client-side
+    const q2 = query(collection(db, 'rides'), where('driverId','==',state.user.uid));
     const snap2 = await getDocs(q2);
-    const rides = snap2.docs.map(d => ({id:d.id,...d.data()}));
+    let rides = snap2.docs.map(d => ({id:d.id,...d.data()}));
+    // Sort by createdAt desc client-side
+    rides.sort((a,b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
     if (rides.length) {
-      nodlEl.style.display = 'none';
+      if (nodlEl) nodlEl.style.display = 'none';
       dlEl.innerHTML = rides.map(r => `
         <div class="card" style="padding:20px">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
             <div><div style="font-weight:700;font-size:16px">${esc(r.from)} → ${esc(r.to)}</div>
-            <div style="color:var(--muted);font-size:13px">${r.depDate} at ${r.depTime} · ${r.seatsLeft||0}/${r.totalSeats||0} seats left</div></div>
-            <span class="badge ${r.status==='active'?'badge-verified':r.status==='cancelled'?'badge-full':'badge-pending'}">${r.status}</span>
+            <div style="color:var(--muted);font-size:13px">${r.depDate||''} at ${r.depTime||''} · ${r.seatsLeft||0}/${r.totalSeats||0} seats left</div></div>
+            <span class="badge ${r.status==='active'?'badge-verified':r.status==='cancelled'?'badge-full':'badge-pending'}">${r.status||'active'}</span>
           </div>
           <div style="font-size:13px;color:var(--muted);margin-top:8px">${(r.price||0).toLocaleString()} XAF per seat · ${r.vehicle||''}</div>
           <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
@@ -1496,10 +1632,10 @@ async function loadMyBookings() {
           </div>
         </div>`).join('');
     } else {
-      nodlEl.style.display = '';
-      dlEl.innerHTML = '';
+      if (nodlEl) nodlEl.style.display = '';
+      if (dlEl) dlEl.innerHTML = '';
     }
-  } catch(e) { dlEl.innerHTML = '<div class="alert alert-error">Error loading listings.</div>'; }
+  } catch(e) { console.error('Listings load error:', e); if (dlEl) dlEl.innerHTML = `<div class="alert alert-error">Error loading listings: ${e.message}</div>`; }
 }
 
 async function cancelBooking(bookingId, rideId, seats) {
@@ -1680,6 +1816,8 @@ async function sendMsg() {
     lastTime: serverTimestamp(),
     [`unread.${otherId}`]: increment(1)
   });
+  // Notify the other user of new message
+  createNotification(otherId, '💬 New Message', `${state.profile?.name||'Someone'} sent you a message.`, 'message', convId);
 }
 
 function handleChatKey(e) {
@@ -1999,10 +2137,13 @@ async function loadAdminDashboard() {
 }
 
 async function loadAdminRides() {
-  const { db, collection, getDocs, orderBy, query } = window._fb;
-  const snap = await getDocs(query(collection(db, 'rides'), orderBy('createdAt','desc')));
-  adminData.rides = snap.docs.map(d => ({id:d.id,...d.data()}));
-  renderAdminRides();
+  const { db, collection, getDocs, query } = window._fb;
+  try {
+    const snap = await getDocs(collection(db, 'rides'));
+    adminData.rides = snap.docs.map(d => ({id:d.id,...d.data()}));
+    adminData.rides.sort((a,b) => { const ta=a.createdAt?.toMillis?a.createdAt.toMillis():0,tb=b.createdAt?.toMillis?b.createdAt.toMillis():0; return tb-ta; });
+    renderAdminRides();
+  } catch(e) { console.error('Admin rides error:', e); }
 }
 
 function renderAdminRides() {
@@ -2044,43 +2185,66 @@ async function adminEditRideStatus(rideId) {
 }
 
 async function loadAdminBookings() {
-  const { db, collection, getDocs, orderBy, query } = window._fb;
-  const snap = await getDocs(query(collection(db, 'bookings'), orderBy('createdAt','desc')));
-  adminData.bookings = snap.docs.map(d => ({id:d.id,...d.data()}));
-  document.getElementById('adminBookingsTable').innerHTML = adminData.bookings.map(b => `
-    <tr>
-      <td style="color:#666;font-size:11px">${b.id.slice(0,8)}</td>
-      <td>${esc(b.from||'')} → ${esc(b.to||'')}</td>
-      <td>${esc(b.passengerName||'')}</td>
-      <td>${b.seats||0}</td>
-      <td>${(b.total||0).toLocaleString()} XAF</td>
-      <td><span class="admin-badge ${b.status==='accepted'?'ab-green':b.status==='cancelled'?'ab-red':'ab-yellow'}">${b.status||'—'}</span></td>
-      <td style="color:#666;font-size:11px">${b.createdAt?.toDate?b.createdAt.toDate().toLocaleDateString():''}</td>
-      <td>
-        <select onchange="adminUpdateBookingStatus('${b.id}',this.value)" style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:4px 8px;border-radius:4px;font-size:12px">
-          <option value="">Change…</option>
-          <option value="pending">Pending</option>
-          <option value="accepted">Accepted</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
-        </select>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="8" style="color:#666;padding:20px">No bookings</td></tr>';
+  const { db, collection, getDocs } = window._fb;
+  try {
+    const snap = await getDocs(collection(db, 'bookings'));
+    adminData.bookings = snap.docs.map(d => ({id:d.id,...d.data()}));
+    adminData.bookings.sort((a,b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    document.getElementById('adminBookingsTable').innerHTML = adminData.bookings.map(b => `
+      <tr>
+        <td style="color:#666;font-size:11px">${b.id.slice(0,8)}</td>
+        <td>${esc(b.from||'')} → ${esc(b.to||'')}</td>
+        <td>${esc(b.passengerName||'')}</td>
+        <td>${b.seats||0}</td>
+        <td>${(b.total||0).toLocaleString()} XAF</td>
+        <td><span class="admin-badge ${b.status==='accepted'?'ab-green':b.status==='cancelled'?'ab-red':'ab-yellow'}">${b.status||'—'}</span></td>
+        <td style="color:#666;font-size:11px">${b.createdAt?.toDate?b.createdAt.toDate().toLocaleDateString():''}</td>
+        <td>
+          <select onchange="adminUpdateBookingStatus('${b.id}',this.value)" style="background:#1a1a1a;color:#fff;border:1px solid #333;padding:4px 8px;border-radius:4px;font-size:12px">
+            <option value="">Change…</option>
+            <option value="pending">Pending</option>
+            <option value="accepted">Accepted</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="8" style="color:#666;padding:20px">No bookings</td></tr>';
+  } catch(e) {
+    console.error('Admin bookings error:', e);
+    const el = document.getElementById('adminBookingsTable');
+    if (el) el.innerHTML = '<tr><td colspan="8" style="color:#f44336;padding:20px">Error loading bookings: ' + e.message + '</td></tr>';
+  }
 }
 
 async function adminUpdateBookingStatus(bookingId, status) {
   if (!status) return;
-  const { db, doc, updateDoc } = window._fb;
+  const { db, doc, updateDoc, getDoc } = window._fb;
   await updateDoc(doc(db, 'bookings', bookingId), { status });
+  // Notify passenger of status change
+  try {
+    const bSnap = await getDoc(doc(db, 'bookings', bookingId));
+    if (bSnap.exists()) {
+      const b = bSnap.data();
+      if (status === 'accepted') createNotification(b.passengerId, '✅ Booking Accepted!', `Your booking for ${esc(b.from||'')} → ${esc(b.to||'')} was accepted.`, 'accepted', bookingId);
+      else if (status === 'cancelled') createNotification(b.passengerId, '❌ Booking Cancelled', `Your booking for ${esc(b.from||'')} → ${esc(b.to||'')} was cancelled.`, 'cancelled', bookingId);
+    }
+  } catch(e){}
   toast('Booking updated.', 'success');
   loadAdminBookings();
 }
 
 async function loadAdminUsers() {
-  const { db, collection, getDocs, orderBy, query } = window._fb;
-  const snap = await getDocs(query(collection(db, 'users'), orderBy('createdAt','desc')));
-  adminData.users = snap.docs.map(d => ({id:d.id,...d.data()}));
-  renderAdminUsers();
+  const { db, collection, getDocs } = window._fb;
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    adminData.users = snap.docs.map(d => ({id:d.id,...d.data()}));
+    adminData.users.sort((a,b) => { const ta=a.createdAt?.toMillis?a.createdAt.toMillis():0,tb=b.createdAt?.toMillis?b.createdAt.toMillis():0; return tb-ta; });
+    renderAdminUsers();
+  } catch(e) { console.error('Admin users error:', e); }
 }
 
 function renderAdminUsers() {
@@ -2156,8 +2320,8 @@ async function adminUnsuspendUser(uid) {
 }
 
 async function loadAdminMessages() {
-  const { db, collection, getDocs, orderBy, query } = window._fb;
-  const snap = await getDocs(query(collection(db, 'conversations'), orderBy('lastTime','desc')));
+  const { db, collection, getDocs } = window._fb;
+  const snap = await getDocs(collection(db, 'conversations'));
   adminData.conversations = snap.docs.map(d => ({id:d.id,...d.data()}));
 
   const listEl = document.getElementById('adminChatList');
@@ -2369,6 +2533,188 @@ async function adminRemoveStaff(uid) {
   loadAdminStaff();
 }
 
+
+// ─────────────────────────────────────────────────────
+// DASHBOARD
+// ─────────────────────────────────────────────────────
+async function loadDashboard() {
+  if (!state.user) { showPage('home'); return; }
+  const { db, collection, query, where, getDocs } = window._fb;
+
+  // Welcome message
+  const name = state.profile?.name || state.user.email || 'there';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  const nameEl = document.getElementById('dashWelcomeName');
+  const subEl = document.getElementById('dashWelcomeSub');
+  if (nameEl) nameEl.textContent = `${greeting}, ${name.split(' ')[0]} 👋`;
+  if (subEl) subEl.textContent = state.profile?.city ? `Based in ${state.profile.city}` : 'What would you like to do today?';
+
+  // Stats
+  try {
+    const uid = state.user.uid;
+    const [bSnap, rSnap, convSnap] = await Promise.all([
+      getDocs(query(collection(db, 'bookings'), where('passengerId','==',uid))),
+      getDocs(query(collection(db, 'rides'), where('driverId','==',uid))),
+      getDocs(query(collection(db, 'conversations'), where('participants','array-contains',uid)))
+    ]);
+    const bookingCount = document.getElementById('dashBookingCount');
+    const listingCount = document.getElementById('dashListingCount');
+    const msgCount = document.getElementById('dashMsgCount');
+    const ratingEl = document.getElementById('dashRating');
+    if (bookingCount) bookingCount.textContent = bSnap.size;
+    if (listingCount) listingCount.textContent = rSnap.size;
+    if (msgCount) msgCount.textContent = convSnap.size;
+    if (ratingEl) ratingEl.textContent = state.profile?.rating ? state.profile.rating.toFixed(1) + '★' : '–';
+
+    // Recent activity
+    const actEl = document.getElementById('dashRecentActivity');
+    if (actEl) {
+      const bookings = bSnap.docs.map(d => ({id:d.id,...d.data()}));
+      bookings.sort((a,b) => { const ta=a.createdAt?.toMillis?a.createdAt.toMillis():0,tb=b.createdAt?.toMillis?b.createdAt.toMillis():0; return tb-ta; });
+      const rides = rSnap.docs.map(d => ({id:d.id,...d.data()}));
+
+      const items = [
+        ...bookings.slice(0,3).map(b => ({ icon:'🎫', text:`Booking: ${b.from||''} → ${b.to||''}`, sub:`${capitalize(b.status||'pending')} · ${(b.total||0).toLocaleString()} XAF`, time: b.createdAt })),
+        ...rides.slice(0,2).map(r => ({ icon:'🚗', text:`Your ride: ${r.from||''} → ${r.to||''}`, sub:`${r.depDate||''} · ${r.seatsLeft||0} seats left`, time: r.createdAt }))
+      ];
+
+      if (!items.length) {
+        actEl.innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">🛣️</div><p>No activity yet.</p><a href="#" onclick="showPage('browse');return false" style="color:var(--saffron);font-weight:600">Browse rides →</a></div>`;
+      } else {
+        actEl.innerHTML = items.map(item => `
+          <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px">
+            <div style="font-size:24px;flex-shrink:0">${item.icon}</div>
+            <div style="flex:1">
+              <div style="font-weight:600;font-size:14px">${esc(item.text)}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">${esc(item.sub)}</div>
+            </div>
+          </div>`).join('');
+      }
+    }
+  } catch(e) { console.error('Dashboard load error:', e); }
+}
+
+// ─────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────
+let notifUnsubscribe = null;
+
+async function createNotification(userId, title, body, type, refId='') {
+  if (!userId || !window._fb) return;
+  const { db, collection, addDoc, serverTimestamp } = window._fb;
+  try {
+    await addDoc(collection(db, 'notifications'), {
+      userId, title, body, type, refId,
+      read: false, createdAt: serverTimestamp()
+    });
+  } catch(e) { console.warn('Notif create error:', e); }
+}
+
+function listenNotifications() {
+  if (!state.user || !window._fb) return;
+  if (notifUnsubscribe) notifUnsubscribe();
+  const { db, collection, query, where, onSnapshot, orderBy } = window._fb;
+  const uid = state.user.uid;
+
+  // Simple query on userId only — no composite index needed
+  const q = query(collection(db, 'notifications'), where('userId','==',uid));
+  notifUnsubscribe = onSnapshot(q, snap => {
+    const all = snap.docs.map(d => ({id:d.id,...d.data()}));
+    // Sort client-side by createdAt desc
+    all.sort((a,b) => {
+      const ta = a.createdAt?.toMillis?a.createdAt.toMillis():0;
+      const tb = b.createdAt?.toMillis?b.createdAt.toMillis():0;
+      return tb - ta;
+    });
+    const unread = all.filter(n => !n.read).length;
+    state.notifications = all;
+    updateNotifBadge(unread);
+    renderNotifPanel(all);
+  }, err => { console.warn('Notif listener error:', err); });
+}
+
+function stopNotifListener() {
+  if (notifUnsubscribe) { notifUnsubscribe(); notifUnsubscribe = null; }
+  state.notifications = [];
+  updateNotifBadge(0);
+}
+
+function updateNotifBadge(count) {
+  const badge = document.getElementById('notifBadge');
+  if (!badge) return;
+  if (count > 0) { badge.textContent = count > 99 ? '99+' : count; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
+}
+
+function renderNotifPanel(notifs) {
+  const list = document.getElementById('notifList');
+  if (!list) return;
+  if (!notifs || !notifs.length) { list.innerHTML = '<div class="notif-empty">🔔 No notifications yet</div>'; return; }
+
+  const icons = { booking:'🎫', message:'💬', ride:'🚗', accepted:'✅', cancelled:'❌', verified:'✓', system:'ℹ️' };
+  const colors = { booking:'#FFF3E0', message:'#E3F2FD', ride:'#E8F5E9', accepted:'#E8F5E9', cancelled:'#FFEBEE', system:'#F3E5F5' };
+
+  list.innerHTML = notifs.slice(0,20).map(n => {
+    const icon = icons[n.type] || '🔔';
+    const bg = colors[n.type] || '#F5F5F5';
+    const t = n.createdAt?.toDate ? timeAgo(n.createdAt.toDate()) : '';
+    return `<div class="notif-item ${n.read?'':'unread'}" onclick="markNotifRead('${n.id}','${n.type}','${n.refId||''}')">
+      <div class="notif-icon" style="background:${bg}">${icon}</div>
+      <div class="notif-content">
+        <div class="notif-title">${esc(n.title||'Notification')}</div>
+        <div class="notif-desc">${esc(n.body||'')}</div>
+        <div class="notif-time">${t}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function markNotifRead(notifId, type, refId) {
+  if (!window._fb) return;
+  const { db, doc, updateDoc } = window._fb;
+  try { await updateDoc(doc(db, 'notifications', notifId), { read: true }); } catch(e){}
+  // Navigate based on type
+  closeNotifPanel();
+  if (type === 'booking' || type === 'accepted' || type === 'cancelled') showPage('mybookings');
+  else if (type === 'message') showPage('chat');
+  else if (type === 'ride') showPage('mybookings');
+}
+
+async function markAllNotifsRead() {
+  if (!state.user || !window._fb || !state.notifications) return;
+  const { db, doc, updateDoc } = window._fb;
+  const unread = (state.notifications || []).filter(n => !n.read);
+  await Promise.all(unread.map(n => updateDoc(doc(db, 'notifications', n.id), { read: true }).catch(()=>{})));
+  toast('All notifications marked as read', 'success');
+}
+
+function toggleNotifPanel(e) {
+  e.stopPropagation();
+  const panel = document.getElementById('notifPanel');
+  if (!panel) return;
+  panel.classList.toggle('hidden');
+}
+
+function closeNotifPanel() {
+  const panel = document.getElementById('notifPanel');
+  if (panel) panel.classList.add('hidden');
+}
+
+function timeAgo(date) {
+  const diff = Math.floor((Date.now() - date.getTime()) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+  return Math.floor(diff/86400) + 'd ago';
+}
+
+// Close notif panel when clicking outside
+document.addEventListener('click', e => {
+  const wrap = document.getElementById('notifWrap');
+  if (wrap && !wrap.contains(e.target)) closeNotifPanel();
+});
+
 // ─────────────────────────────────────────────────────
 // UTILS
 // ─────────────────────────────────────────────────────
@@ -2494,6 +2840,11 @@ document.addEventListener('keydown', e => {
 //     match /platform/{doc} {
 //       allow read: if true;
 //       allow write: if true;
+//     }
+//     match /notifications/{doc} {
+//       allow read, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+//       allow create: if request.auth != null;
+//       allow update: if request.auth != null && request.auth.uid == resource.data.userId;
 //     }
 //   }
 // }
